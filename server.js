@@ -47,8 +47,8 @@ myHttp.createServer(function (request, response) {
 				response.end(JSON.stringify(mess, null, 2));
 			} else {
 				if (request.url === '/_DBconfig') {
-					console.log('Validating _DBconfig file')
-					console.log(path2schemas + 'globalDBschema.json')
+					// console.log('Validating _DBconfig file')
+					// console.log(path2schemas + 'globalDBschema.json')
 					fs.readFile(path2schemas + 'globalDBschema.json', 'utf8', function (globErr, globData) {
 
 						var validationErrs = v.validate(JSON.parse(data), JSON.parse(globData)).errors;
@@ -71,7 +71,30 @@ myHttp.createServer(function (request, response) {
 							response.end(JSON.stringify(mess, null, 2));
 						}
 					});
+				} else if (request.url === '/_annot') {
+					// console.log('Validating _DBconfig file');
+					// console.log(path2schemas + 'annotationFileSchema.json');
+					fs.readFile(path2schemas + 'annotationFileSchema.json', 'utf8', function (annotErr, annotData) {
+						var validationErrs = v.validate(JSON.parse(data), JSON.parse(annotData)).errors;
+						if (validationErrs.length === 0) {
+							mess.type = 'SUCCESS';
+							response.writeHead(200, {
+								'content-type': 'text/plain'
+							});
+							response.end(JSON.stringify(mess, null, 2));
+						} else {
+							// console.log('VALIDATION ERRORS:');
+							// console.log(validationErrs);
+							mess.type = 'ERROR';
+							mess.from = 'JSONSCHEMA (means does not comply to schema)';
+							mess.ERRORS = validationErrs;
 
+							response.writeHead(200, {
+								'content-type': 'text/plain'
+							});
+							response.end(JSON.stringify(mess, null, 2));
+						}
+					});
 				}
 
 				// mess.type = 'SUCCESS';
