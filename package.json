@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "json-lint": "^0.1.0",
+    "tv4": "^1.1.9",
+    "url": "^0.10.2"
   },
   "devDependencies": {},
   "engines": {}
