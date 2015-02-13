@@ -2,6 +2,12 @@
 
 Simple validation server to validate json files used by the new EMU speech database management system
 
+# Quickstart
+
+Install dependencies and start server with:
+
+- `npm install`
+- `node server.js`
 
 #CURL commands:
 
