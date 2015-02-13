@@ -6,6 +6,7 @@ Validation server for json files used by the new EMU speech database management 
 
 var sys = require('sys'),
 	myHttp = require('http'),
+	https = require('https'),
 	path = require('path'),
 	fs = require('fs');
 
@@ -16,7 +17,26 @@ var tv4 = require('tv4');
 
 // global vars
 var port = 9263;
-var path2schemas = 'schemas/';
+var annotSchemaData;
+
+// get annotSchema
+var annotSchemaURL = 'https://raw.githubusercontent.com/IPS-LMU/EMU-webApp/master/app/schemaFiles/annotationFileSchema.json';
+
+https.get(annotSchemaURL, function(res) {
+    var body = '';
+
+    res.on('data', function(chunk) {
+        body += chunk;
+    });
+
+    res.on('end', function() {
+        annotSchemaData = JSON.parse(body);
+        console.log("Finished loading annotSchemaData")
+    });
+}).on('error', function(e) {
+      console.log("Got error: ", e);
+});
+
 
 myHttp.createServer(function (request, response) {
 	if (request.method === 'GET') {
@@ -71,34 +91,28 @@ myHttp.createServer(function (request, response) {
 					// 	}
 					// });
 				} else if (request.url === '/_annot') {
-					console.log('Validating _annot file');
+					// console.log('Validating _annot file');
 					// console.log(path2schemas + 'annotationFileSchema.json');
-					fs.readFile(path2schemas + 'annotationFileSchema.json', 'utf8', function (annotSchemaErr, annotSchemaData) {
 						
-						if(annotSchemaErr){
-							console.log('ERROR reading annotationFileSchema.json')
-						}
+					var validRes = tv4.validate(JSON.parse(data), annotSchemaData);
 						
-						var validRes = tv4.validate(JSON.parse(data), JSON.parse(annotSchemaData))
-						
-						if (validRes) {
-							console.log('SUCCESS')
-							mess.type = 'SUCCESS';
-							response.writeHead(200, {
-								'content-type': 'text/plain'
-							});
-							response.end(JSON.stringify(mess, null, 2));
-						} else {
-							mess.type = 'ERROR';
-							mess.from = 'JSONSCHEMA (means does not comply to schema)';
-							mess.ERRORS = tv4.error;
+					if (validRes) {
+						mess.type = 'SUCCESS';
+						response.writeHead(200, {
+							'content-type': 'text/plain'
+						});
+						response.end(JSON.stringify(mess, null, 2));
+					} else {
+						mess.type = 'ERROR';
+						mess.from = 'JSONSCHEMA (means does not comply to schema)';
+						mess.ERRORS = tv4.error;
 
-							response.writeHead(200, {
-								'content-type': 'text/plain'
-							});
-							response.end(JSON.stringify(mess, null, 2));
-						}
-					});
+						response.writeHead(200, {
+							'content-type': 'text/plain'
+						});
+						response.end(JSON.stringify(mess, null, 2));
+					}
+
 				}
 			}
 		});
