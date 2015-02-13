@@ -14,19 +14,20 @@ var JSONLint = require('json-lint');
 var url = require("url");
 var queryString = require("querystring");
 
-var Validator = require('jsonschema').Validator;
-var v = new Validator();
-
+var tv4 = require('tv4');
 
 // global vars
 var port = 9263;
 var path2schemas = 'schemas/';
 
 myHttp.createServer(function (request, response) {
+	if (request.method === 'GET') {
+		console.log('not processing GET')
+	}
 	if (request.method === 'POST') {
 		// the body of the POST is JSON payload.
 		var queryData = url.parse(request.url, true).query;
-		console.log(request.url);
+		// console.log(request.url);
 		var data = '';
 		request.addListener('data', function (chunk) {
 			data += chunk;
@@ -49,45 +50,50 @@ myHttp.createServer(function (request, response) {
 				if (request.url === '/_DBconfig') {
 					// console.log('Validating _DBconfig file')
 					// console.log(path2schemas + 'globalDBschema.json')
-					fs.readFile(path2schemas + 'globalDBschema.json', 'utf8', function (globErr, globData) {
+					// fs.readFile(path2schemas + 'globalDBschema.json', 'utf8', function (globErr, globData) {
 
-						var validationErrs = v.validate(JSON.parse(data), JSON.parse(globData)).errors;
-						if (validationErrs.length === 0) {
-							mess.type = 'SUCCESS';
-							response.writeHead(200, {
-								'content-type': 'text/plain'
-							});
-							response.end(JSON.stringify(mess, null, 2));
-						} else {
-							// console.log('VALIDATION ERRORS:');
-							// console.log(validationErrs);
-							mess.type = 'ERROR';
-							mess.from = 'JSONSCHEMA (means does not comply to schema)';
-							mess.ERRORS = validationErrs;
+					// 	var validationErrs = v.validate(JSON.parse(data), JSON.parse(globData)).errors;
+					// 	if (validationErrs.length === 0) {
+					// 		mess.type = 'SUCCESS';
+					// 		response.writeHead(200, {
+					// 			'content-type': 'text/plain'
+					// 		});
+					// 		response.end(JSON.stringify(mess, null, 2));
+					// 	} else {
+					// 		// console.log('VALIDATION ERRORS:');
+					// 		// console.log(validationErrs);
+					// 		mess.type = 'ERROR';
+					// 		mess.from = 'JSONSCHEMA (means does not comply to schema)';
+					// 		mess.ERRORS = validationErrs;
 
-							response.writeHead(200, {
-								'content-type': 'text/plain'
-							});
-							response.end(JSON.stringify(mess, null, 2));
-						}
-					});
+					// 		response.writeHead(200, {
+					// 			'content-type': 'text/plain'
+					// 		});
+					// 		response.end(JSON.stringify(mess, null, 2));
+					// 	}
+					// });
 				} else if (request.url === '/_annot') {
-					// console.log('Validating _DBconfig file');
+					console.log('Validating _annot file');
 					// console.log(path2schemas + 'annotationFileSchema.json');
-					fs.readFile(path2schemas + 'annotationFileSchema.json', 'utf8', function (annotErr, annotData) {
-						var validationErrs = v.validate(JSON.parse(data), JSON.parse(annotData)).errors;
-						if (validationErrs.length === 0) {
+					fs.readFile(path2schemas + 'annotationFileSchema.json', 'utf8', function (annotSchemaErr, annotSchemaData) {
+						
+						if(annotSchemaErr){
+							console.log('ERROR reading annotationFileSchema.json')
+						}
+						
+						var validRes = tv4.validate(JSON.parse(data), JSON.parse(annotSchemaData))
+						
+						if (validRes) {
+							console.log('SUCCESS')
 							mess.type = 'SUCCESS';
 							response.writeHead(200, {
 								'content-type': 'text/plain'
 							});
 							response.end(JSON.stringify(mess, null, 2));
 						} else {
-							// console.log('VALIDATION ERRORS:');
-							// console.log(validationErrs);
 							mess.type = 'ERROR';
 							mess.from = 'JSONSCHEMA (means does not comply to schema)';
-							mess.ERRORS = validationErrs;
+							mess.ERRORS = tv4.error;
 
 							response.writeHead(200, {
 								'content-type': 'text/plain'
@@ -96,12 +102,6 @@ myHttp.createServer(function (request, response) {
 						}
 					});
 				}
-
-				// mess.type = 'SUCCESS';
-				// response.writeHead(200, {
-				// 	'content-type': 'text/plain'
-				// });
-				// response.end(JSON.stringify(mess, null, 2));
 			}
 		});
 	}
