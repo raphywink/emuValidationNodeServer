@@ -15,13 +15,13 @@ Install dependencies and start server with:
 
 ### curl
 
-`curl -XPOST -H 'Content-Tpe:application/json' -H 'Accept: application/json' --data-binary @/path/2/emuLVC/validators/exampleInstances/instanceOfAnnotationFile.json http://localhost:9263/_annot`
+`curl -H "Content-Type: applicationjson" --data-binary  @msajc003_annot.json http://localhost:9263/_annot`
 
 ### RCurl
 
 `library('RCurl')`
 
-`json_file = '/path/2/emuLVC/validators/exampleInstances/instanceOfAnnotationFile.json'`
+`json_file = '/path/2/instanceOfAnnotationFile.json'`
 `json_data = fromJSON(paste(readLines(json_file), collapse=""))`
 `headers <- list('Accept' = 'application/json', 'Content-Type' = 'application/json')`
 `postForm("http://localhost:9263/_annot", .opts=list(postfields=paste(readLines(json_file), collapse=""), httpheader=headers))`
