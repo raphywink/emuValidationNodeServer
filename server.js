@@ -12,8 +12,6 @@ var sys = require('sys'),
 
 var JSONLint = require('json-lint');
 var url = require("url");
-var queryString = require("querystring");
-
 var tv4 = require('tv4');
 
 // global vars
