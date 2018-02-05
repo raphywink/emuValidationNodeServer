@@ -4,11 +4,11 @@ Validation server for json files used by the new EMU speech database management 
 @author Raphael Winkelmann
 */
 
-var sys = require('sys'),
-	myHttp = require('http'),
+var myHttp = require('http'),
 	https = require('https'),
 	path = require('path'),
-	fs = require('fs');
+	fs = require('fs'),
+	jsonlint = require('jsonlint');
 
 
 var JSONLint = require('json-lint');
@@ -31,7 +31,7 @@ https.get(annotSchemaURL, function(res) {
 
     res.on('end', function() {
         annotSchemaData = JSON.parse(body);
-        console.log("Finished loading annotSchemaData")
+        console.log("Finished loading annotSchemaData");
     });
 }).on('error', function(e) {
       console.log("Got error: ", e);
@@ -40,7 +40,7 @@ https.get(annotSchemaURL, function(res) {
 
 myHttp.createServer(function (request, response) {
 	if (request.method === 'GET') {
-		console.log('not processing GET')
+		console.log('not processing GET');
 	}
 	if (request.method === 'POST') {
 		// the body of the POST is JSON payload.
@@ -120,4 +120,4 @@ myHttp.createServer(function (request, response) {
 }).listen(port);
 
 
-sys.puts("Server Running @ http://localhost:" + port);
+console.log("Server Running @ http://localhost:" + port);
